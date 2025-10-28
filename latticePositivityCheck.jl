@@ -84,6 +84,11 @@ function get_Cfancy(Lf, C0)
 end
 
 function get_R(h)
+    return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
+        if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v
+        else return nothing
+        end
+    end
 # each v in L, s.t. dot(h,v)=0 and dot(v,v)=-2
 end
 
