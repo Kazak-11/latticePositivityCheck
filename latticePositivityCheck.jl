@@ -1,11 +1,11 @@
-function latticePositive(Lf::ZZLatWithIsom, h) :: [Bool, QQFieldElem]
+function latticePositive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldElem]
     f = isometry(Lf)
     L = lattice(Lf)
     tau = getTau(f)
     result = [true, 0] # initialize as positive without roots
 
     # step 1
-    getC0(Lf)
+    C0 = getC0(Lf)
 
     # step 2
     if C0 != 1
@@ -24,7 +24,7 @@ function latticePositive(Lf::ZZLatWithIsom, h) :: [Bool, QQFieldElem]
     end
 
     # step 4
-
+    # is h integer as it is a part of L?
     # step 5
     Rh = getR(h)
     # step 6
@@ -35,7 +35,7 @@ function latticePositive(Lf::ZZLatWithIsom, h) :: [Bool, QQFieldElem]
     # step 7
     A = getA(h, f)
     # step 8
-    #H = foreach
+    H = map((a,b)-> -b*h + a*(f*h), A)
     # step 9
     for h in H
         Rh = getR(h)
@@ -69,7 +69,7 @@ end
 function getC0(Lf)
     #charF
 
-    let charPolyF = characteristic_polynomial(Lf)
+    charPolyF = characteristic_polynomial(Lf)
 
     # how to divide charPolyF with (x-1)? 
 end
