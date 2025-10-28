@@ -75,11 +75,12 @@ function get_C0(Lf)
 end
 
 function get_Cfancy(Lf, C0)
-    kernel_lattice(Lf, C0) 
-    # how to get roots from the resulting lattice?
-
-    CFancy = short_vectors(lattice(kernel_lattice(Lf, C0)))
-    #https://docs.oscar-system.org/dev/NumberTheory/QuadFormAndIsom/latwithisom/#kernel_lattice-Tuple%7BZZLatWithIsom,%20Integer%7D
+    # is it correct way to use 
+    return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
+        if dot(v,v) == -2.0 return v
+        else return nothing
+        end
+    end
 end
 
 function get_R(h)
