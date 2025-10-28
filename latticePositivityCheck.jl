@@ -1,23 +1,23 @@
-function latticePositive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldElem]
+function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldElem]
     f = isometry(Lf)
     L = lattice(Lf)
-    tau = getTau(f)
+    tau = get_tau(f)
     result = [true, 0] # initialize as positive without roots
 
     # step 1
-    C0 = getC0(Lf)
+    C0 = get_C0(Lf)
 
     # step 2
     if C0 != 1
-        Cfancy = getCfancy(Lf, C0)
+        Cfancy = get_Cfancy(Lf, C0)
         if Cfancy != empty
             return [false, Cfancy[0]]
         end
     end
 
     # step 3
-    v = getEigenvector(f, tau)
-    w = getEigenvector(f, tau^(-1))
+    v = get_eigenvector(f, tau)
+    w = get_eigenvector(f, tau^(-1))
 
     if dot(v,w)<0
         v = -v
@@ -26,21 +26,21 @@ function latticePositive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldEle
     # step 4
     # is h integer as it is a part of L?
     # step 5
-    Rh = getR(h)
+    Rh = get_R(h)
     # step 6
     for r in Rh 
-        result = checkR(r) 
+        result = check_R(r) 
         if !result[0] return result end
     end
     # step 7
-    A = getA(h, f)
+    A = get_A(h, f)
     # step 8
     H = map((a,b)-> -b*h + a*(f*h), A)
     # step 9
     for h in H
-        Rh = getR(h)
+        Rh = get_R(h)
         for r in Rh
-            result = checkR(r)
+            result = check_R(r)
             if !result[0] return result end
         end
     end
@@ -49,7 +49,7 @@ end
 
 # (true,0)
 
-function getTau(f)
+function get_tau(f)
     Qb = algebraic_closure(QQ);
     tau = QQ(0)
     for lambda in eigenvalues(Qb, f)
@@ -61,12 +61,12 @@ function getTau(f)
     return tau
 end
 
-function getEigenvector(f, lambda)
+function get_eigenvector(f, lambda)
     # should I use OSCAR functionality or Julia to get eigenvectors?
     return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
 end
 
-function getC0(Lf)
+function get_C0(Lf)
     #charF
 
     charPolyF = characteristic_polynomial(Lf)
@@ -74,16 +74,19 @@ function getC0(Lf)
     # how to divide charPolyF with (x-1)? 
 end
 
-function getCfancy(Lf, C0)
+function get_Cfancy(Lf, C0)
     kernel_lattice(Lf, C0) 
     # how to get roots from the resulting lattice?
+
+    CFancy = short_vectors(lattice(kernel_lattice(Lf, C0)))
     #https://docs.oscar-system.org/dev/NumberTheory/QuadFormAndIsom/latwithisom/#kernel_lattice-Tuple%7BZZLatWithIsom,%20Integer%7D
 end
 
-function getR(h)
+function get_R(h)
+# each v in L, s.t. dot(h,v)=0 and dot(v,v)=-2
 end
 
-function checkR(r)
+function check_R(r)
     if dot(r, v)*dot(r, w) < 0 return [false, r]
     else return [true, 0] end
 end
