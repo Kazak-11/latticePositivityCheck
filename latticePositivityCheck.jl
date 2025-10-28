@@ -1,16 +1,17 @@
-function latticePositive(Lf::ZZLatWithIsom, h) :: (Bool, QQFieldElem)
+function latticePositive(Lf::ZZLatWithIsom, h) :: [Bool, QQFieldElem]
     f = isometry(Lf)
     L = lattice(Lf)
     tau = getTau(f)
+    result = [true, 0] # initialize as positive without roots
 
     # step 1
     getC0(Lf)
 
     # step 2
     if C0 != 1
-        Cfancy = getCfancy()
+        Cfancy = getCfancy(Lf, C0)
         if Cfancy != empty
-            return (false, Cfancy[0])
+            return [false, Cfancy[0]]
         end
     end
 
@@ -18,7 +19,7 @@ function latticePositive(Lf::ZZLatWithIsom, h) :: (Bool, QQFieldElem)
     v = getEigenvector(f, tau)
     w = getEigenvector(f, tau^(-1))
 
-    if (v,w)<0
+    if dot(v,w)<0
         v = -v
     end
 
@@ -27,17 +28,21 @@ function latticePositive(Lf::ZZLatWithIsom, h) :: (Bool, QQFieldElem)
     # step 5
     Rh = getR(h)
     # step 6
-    result = (0, false)
-    result = foreach(checkR, Rh) 
+    for r in Rh 
+        result = checkR(r) 
+        if !result[0] return result end
+    end
     # step 7
     A = getA(h, f)
     # step 8
-    H = getH(h, f, A)
+    #H = foreach
     # step 9
-    result = foreach(H) do h
+    for h in H
         Rh = getR(h)
-        result = foreach(checkR, Rh)
-        return result
+        for r in Rh
+            result = checkR(r)
+            if !result[0] return result end
+        end
     end
     return result
 end
@@ -47,7 +52,7 @@ end
 function getTau(f)
     Qb = algebraic_closure(QQ);
     tau = QQ(0)
-    foreach(eigenvalues(Qb, f)) do lambda
+    for lambda in eigenvalues(Qb, f)
         if abs(lambda)>tau
             tau = abs(lambda)
         end
@@ -65,6 +70,8 @@ function getC0(Lf)
     #charF
 
     let charPolyF = characteristic_polynomial(Lf)
+
+    # how to divide charPolyF with (x-1)? 
 end
 
 function getCfancy(Lf, C0)
@@ -77,8 +84,6 @@ function getR(h)
 end
 
 function checkR(r)
-    if dot(r, v)*dot(r, w) < 0
-        return r
-    end
-    return nothing
+    if dot(r, v)*dot(r, w) < 0 return [false, r]
+    else return [true, 0] end
 end
