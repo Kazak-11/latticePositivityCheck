@@ -1,3 +1,5 @@
+const n = 1000000
+
 function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
@@ -24,12 +26,13 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldEl
     end
 
     # step 4
+    h = get_h(L,v,w)
     # is h integer as it is a part of L?
     # step 5
-    Rh = get_R(h)
+    Rh = get_R(h, L)
     # step 6
     for r in Rh 
-        result = check_R(r) 
+        result = check_R(r, v, w) 
         if !result[0] return result end
     end
     # step 7
@@ -38,9 +41,9 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldEl
     H = map((a,b)-> -b*h + a*(f*h), A)
     # step 9
     for h in H
-        Rh = get_R(h)
+        Rh = get_R(h, L)
         for r in Rh
-            result = check_R(r)
+            result = check_R(r, v, w)
             if !result[0] return result end
         end
     end
@@ -81,8 +84,13 @@ function get_Cfancy(Lf, C0)
     end
 end
 
-function get_R(h)
-    return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
+function get_h(L, v, w)
+    z = rand(short_vectors(L,0,2))
+    return map(x->floor(x) , (z+n*(v+w)))
+end
+
+function get_R(h, L)
+    return map(short_vectors(L, 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v
         else return nothing
         end
@@ -90,7 +98,7 @@ function get_R(h)
 # each v in L, s.t. dot(h,v)=0 and dot(v,v)=-2
 end
 
-function check_R(r)
+function check_R(r, v, w)
     if dot(r, v)*dot(r, w) < 0 return (false, r)
     else return (true, 0) end
 end
