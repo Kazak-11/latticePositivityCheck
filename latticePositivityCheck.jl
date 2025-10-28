@@ -1,8 +1,8 @@
-function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldElem]
+function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
-    result = [true, 0] # initialize as positive without roots
+    result = (true, 0) # initialize as positive without roots
 
     # step 1
     C0 = get_C0(Lf)
@@ -11,7 +11,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldEl
     if C0 != 1
         Cfancy = get_Cfancy(Lf, C0)
         if Cfancy != empty
-            return [false, Cfancy[0]]
+            return (false, Cfancy[0])
         end
     end
 
@@ -46,8 +46,6 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: [Bool, QQFieldEl
     end
     return result
 end
-
-# (true,0)
 
 function get_tau(f)
     Qb = algebraic_closure(QQ);
@@ -93,6 +91,6 @@ function get_R(h)
 end
 
 function check_R(r)
-    if dot(r, v)*dot(r, w) < 0 return [false, r]
-    else return [true, 0] end
+    if dot(r, v)*dot(r, w) < 0 return (false, r)
+    else return (true, 0) end
 end
