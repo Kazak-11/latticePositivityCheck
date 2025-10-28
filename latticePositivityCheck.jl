@@ -1,10 +1,9 @@
 const n = 1000000
 
-function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldElem)
+function lattice_positive(Lf::ZZLatWithIsom, h::Vector) :: (Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
-    result = (true, 0) # initialize as positive without roots
 
     # step 1
     C0 = get_C0(Lf)
@@ -27,7 +26,6 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldEl
 
     # step 4
     h = get_h(L,v,w)
-    # is h integer as it is a part of L?
     # step 5
     Rh = get_R(h, L)
     # step 6
@@ -47,7 +45,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::ZZFieldElem) :: (Bool, QQFieldEl
             if !result[0] return result end
         end
     end
-    return result
+    return (true, 0)
 end
 
 function get_tau(f)
@@ -68,15 +66,13 @@ function get_eigenvector(f, lambda)
 end
 
 function get_C0(Lf)
-    #charF
-
     charPolyF = characteristic_polynomial(Lf)
 
     # how to divide charPolyF with (x-1)? 
 end
 
 function get_Cfancy(Lf, C0)
-    # is it correct way to use 
+    # is it correct way to use  short vectors?
     return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 return v
         else return nothing
@@ -95,7 +91,6 @@ function get_R(h, L)
         else return nothing
         end
     end
-# each v in L, s.t. dot(h,v)=0 and dot(v,v)=-2
 end
 
 function check_R(r, v, w)
