@@ -10,7 +10,7 @@ function latticePositive(Lf::ZZLatWithIsom, h)
     if C0 != 1
         Cfancy = getCfancy()
         if Cfancy != empty
-            return (Cfancy[0])
+            return (false, Cfancy[0])
         end
     end
 
@@ -33,15 +33,21 @@ function latticePositive(Lf::ZZLatWithIsom, h)
     # step 8
     H = getH(h, f, A)
     # step 9
-    result = foreach(function (h)
+    result = foreach(H) do h
         Rh = getR(h)
         result = foreach(checkR, Rh)
         return result
-    end, H)
-    return result
+    end
+    return result 
 end
 
+# (true,0)
+
 function getTau(f)
+end
+
+function getC0(f)
+    charF =
 end
 
 function getCfancy()
