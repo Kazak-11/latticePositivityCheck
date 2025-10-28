@@ -1,10 +1,10 @@
-function latticePositive(Lf::ZZLatWithIsom, h) 
+function latticePositive(Lf::ZZLatWithIsom, h) :: (Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = getTau(f)
 
     # step 1
-    getC0(f)
+    getC0(Lf)
 
     # step 2
     if C0 != 1
@@ -27,6 +27,7 @@ function latticePositive(Lf::ZZLatWithIsom, h)
     # step 5
     Rh = getR(h)
     # step 6
+    result = (0, false)
     result = foreach(checkR, Rh) 
     # step 7
     A = getA(h, f)
@@ -38,27 +39,46 @@ function latticePositive(Lf::ZZLatWithIsom, h)
         result = foreach(checkR, Rh)
         return result
     end
-    return result 
+    return result
 end
 
 # (true,0)
 
 function getTau(f)
+    Qb = algebraic_closure(QQ);
+    tau = QQ(0)
+    foreach(eigenvalues(Qb, f)) do lambda
+        if abs(lambda)>tau
+            tau = abs(lambda)
+        end
+        return nothing
+    end
+    return tau
 end
 
-function getC0(f)
-    charF =
+function getEigenvector(f, lambda)
+    # should I use OSCAR functionality or Julia to get eigenvectors?
+    return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
 end
 
-function getCfancy()
+function getC0(Lf)
+    #charF
+
+    let charPolyF = characteristic_polynomial(Lf)
 end
 
+function getCfancy(Lf, C0)
+    kernel_lattice(Lf, C0) 
+    # how to get roots from the resulting lattice?
+    #https://docs.oscar-system.org/dev/NumberTheory/QuadFormAndIsom/latwithisom/#kernel_lattice-Tuple%7BZZLatWithIsom,%20Integer%7D
+end
 
 function getR(h)
 end
 
 function checkR(r)
-    if (r, v)(r, w) < 0
+    if dot(r, v)*dot(r, w) < 0
         return r
     end
+    return nothing
 end
