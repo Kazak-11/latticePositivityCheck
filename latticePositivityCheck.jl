@@ -93,6 +93,24 @@ function get_R(h, L)
     end
 end
 
+function get_A(h, f)
+    x = dot(h, h)
+    y = dot(h, f*h)
+    A = []
+
+    bmin = trunc(-√(2(y^2-x^2)/x))
+    for b = bmin:-1
+        D = √((y^2-x^2)*(b^2+2x))
+        amin = (b*y-D)/x
+        amax = (b*y+D)/x
+        #I NEED TO CHECK IF AMIN AMAX ARE INTEGERS
+        for a = amin:amax
+            push!(A,(a,b))
+        end
+    end
+    return A
+end
+
 function check_R(r, v, w)
     if dot(r, v)*dot(r, w) < 0 return (false, r)
     else return (true, 0) end
