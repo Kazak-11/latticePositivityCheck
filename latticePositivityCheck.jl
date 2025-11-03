@@ -101,9 +101,8 @@ function get_A(h, f)
     bmin = trunc(-√(2(y^2-x^2)/x))
     for b = bmin:-1
         D = √((y^2-x^2)*(b^2+2x))
-        amin = (b*y-D)/x
-        amax = (b*y+D)/x
-        #I NEED TO CHECK IF AMIN AMAX ARE INTEGERS
+        amin = trunc(Int, (b*y-D)/x)
+        amax = trunc(Int, (b*y+D)/x)
         for a = amin:amax
             push!(A,(a,b))
         end
