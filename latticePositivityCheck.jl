@@ -1,6 +1,6 @@
 const n = 1000000
 
-function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing) :: (Bool, QQFieldElem)
+function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing)::(Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
@@ -9,7 +9,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     C0 = get_C0(Lf, tau)
 
     # step 2 - Check if C0 has obstructing roots => positive
-    if C0 != 1  # I need to compare smh types of "1" as polynomial and 1 as integer
+    if !isone(C0)
         Cfancy = get_Cfancy(Lf, C0)
         if !isempty(Cfancy)
             return (false, QQ(Cfancy[0]))
@@ -29,7 +29,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
         h = get_h(L,v,w)
     end
     # step 5 - Get the R set based on current h value
-    Rh = get_R(h, L)
+    Rh = get_R(L, h)
     # step 6 - Check all of the entries of R if there exists obstructing root => positive
     for r in Rh 
         result = check_R(r, v, w) 
@@ -50,7 +50,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     return (true, QQ(0))
 end
 
-function get_tau(f)
+function get_tau(f::QQMatrix)::QQFieldElem
     Qb = algebraic_closure(QQ);
     tau = QQ(0)
     for lambda in eigenvalues(Qb, f)
@@ -61,20 +61,20 @@ function get_tau(f)
     return tau
 end
 
-function get_eigenvector(f, lambda)
+function get_eigenvector(f::QQMatrix, lambda::QQFieldElem)::Vector
     # should I use OSCAR solve functionality or Julia function to get eigenvectors?
     return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
 end
 
-function get_C0(Lf, tau)
+function get_C0(Lf::ZZLatWithIsom, tau::QQFieldElem)::PolyRingElem
     charPolyF = characteristic_polynomial(Lf)
-    while mod(charPolyF, (x-1)) == 0
+    while divides(charPolyF, (x-1))
         div!(charPolyF, (x-1))
     end
     return div!(charPolyF, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
 end
 
-function get_Cfancy(Lf, C0)
+function get_Cfancy(Lf::ZZLatWithIsom, C0)
     # is it correct way to use short vectors?
     return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 return v
@@ -83,12 +83,12 @@ function get_Cfancy(Lf, C0)
     end
 end
 
-function get_h(L, v, w)
+function get_h(L::ZZLat, v::Vector, w::Vector)::Vector
     z = rand(short_vectors(L,0,2))
     return map(x->floor(x) , (z+n*(v+w)))
 end
 
-function get_R(h, L)
+function get_R(L::ZZLat, h::Vector)::Array{Vector}
     return map(short_vectors(L, 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v  # should I use ≈
         else return nothing
@@ -96,7 +96,7 @@ function get_R(h, L)
     end
 end
 
-function get_A(h, f)
+function get_A(h::Vector, f::QQMatrix)::Array{(Int, Int)}
     x = dot(h, h)
     y = dot(h, f*h)
     A = []
@@ -113,7 +113,7 @@ function get_A(h, f)
     return A
 end
 
-function check_R(r, v, w)
+function check_R(r::Vector, v::Vector, w::Vector) :: (Bool, QQFieldElem)
     if dot(r, v)*dot(r, w) < 0 return (false, QQ(r))
     else return (true, QQ(0)) end
 end
