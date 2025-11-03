@@ -1,6 +1,6 @@
 const n = 1000000
 
-function lattice_positive(Lf::ZZLatWithIsom, h::Vector) :: (Bool, QQFieldElem)
+function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing) :: (Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
@@ -25,7 +25,9 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Vector) :: (Bool, QQFieldElem)
     end
 
     # step 4
-    h = get_h(L,v,w)
+    if (h==nothing) 
+        h = get_h(L,v,w)
+    end
     # step 5
     Rh = get_R(h, L)
     # step 6
