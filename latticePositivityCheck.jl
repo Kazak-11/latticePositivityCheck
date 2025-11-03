@@ -8,7 +8,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     # step 1
     C0 = get_C0(Lf, tau)
 
-    # step 2
+    # step 2 - Check if C0 has obstructing roots => positive
     if C0 != 1
         Cfancy = get_Cfancy(Lf, C0)
         if Cfancy != empty
@@ -16,7 +16,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
         end
     end
 
-    # step 3
+    # step 3 - Prepare eigenvectors from tau and tau inverse 
     v = get_eigenvector(f, tau)
     w = get_eigenvector(f, tau^(-1))
 
@@ -24,22 +24,22 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
         v = -v
     end
 
-    # step 4
+    # step 4 - Get the first h value if there is no in arguments
     if (h==nothing) 
         h = get_h(L,v,w)
     end
-    # step 5
+    # step 5 - Get the R set based on current h value
     Rh = get_R(h, L)
-    # step 6
+    # step 6 - Check all of the entries of R if there exists obstructing root => positive
     for r in Rh 
         result = check_R(r, v, w) 
         if !result[0] return result end
     end
     # step 7
     A = get_A(h, f)
-    # step 8
+    # step 8 - Calculate new set of h values, that can show us obstructing roots
     H = map((a,b)-> -b*h + a*(f*h), A)
-    # step 9
+    # step 9 - Check all h from H to check if there exists any obstructing root => positive
     for h in H
         Rh = get_R(h, L)
         for r in Rh
@@ -62,7 +62,7 @@ function get_tau(f)
 end
 
 function get_eigenvector(f, lambda)
-    # should I use OSCAR functionality or Julia to get eigenvectors?
+    # should I use OSCAR solve functionality or Julia function to get eigenvectors?
     return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
 end
 
@@ -75,7 +75,7 @@ function get_C0(Lf, tau)
 end
 
 function get_Cfancy(Lf, C0)
-    # is it correct way to use  short vectors?
+    # is it correct way to use short vectors?
     return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 return v
         else return nothing
@@ -90,7 +90,7 @@ end
 
 function get_R(h, L)
     return map(short_vectors(L, 1.4 , 1.5)) do (v,n)
-        if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v
+        if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v  # should I use ≈
         else return nothing
         end
     end
