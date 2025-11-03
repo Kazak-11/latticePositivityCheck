@@ -12,7 +12,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     if C0 != 1  # I need to compare smh types of "1" as polynomial and 1 as integer
         Cfancy = get_Cfancy(Lf, C0)
         if !isempty(Cfancy)
-            return (false, Cfancy[0])
+            return (false, QQ(Cfancy[0]))
         end
     end
 
@@ -47,7 +47,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
             if !result[0] return result end
         end
     end
-    return (true, 0)
+    return (true, QQ(0))
 end
 
 function get_tau(f)
@@ -114,6 +114,6 @@ function get_A(h, f)
 end
 
 function check_R(r, v, w)
-    if dot(r, v)*dot(r, w) < 0 return (false, r)
-    else return (true, 0) end
+    if dot(r, v)*dot(r, w) < 0 return (false, QQ(r))
+    else return (true, QQ(0)) end
 end
