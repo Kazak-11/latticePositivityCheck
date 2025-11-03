@@ -9,9 +9,9 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     C0 = get_C0(Lf, tau)
 
     # step 2 - Check if C0 has obstructing roots => positive
-    if C0 != 1
+    if C0 != 1  # I need to compare smh types of "1" as polynomial and 1 as integer
         Cfancy = get_Cfancy(Lf, C0)
-        if Cfancy != empty
+        if !isempty(Cfancy)
             return (false, Cfancy[0])
         end
     end
