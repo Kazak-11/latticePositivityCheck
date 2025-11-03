@@ -6,7 +6,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Vector) :: (Bool, QQFieldElem)
     tau = get_tau(f)
 
     # step 1
-    C0 = get_C0(Lf)
+    C0 = get_C0(Lf, tau)
 
     # step 2
     if C0 != 1
@@ -55,7 +55,6 @@ function get_tau(f)
         if abs(lambda)>tau
             tau = abs(lambda)
         end
-        return nothing
     end
     return tau
 end
@@ -65,10 +64,12 @@ function get_eigenvector(f, lambda)
     return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
 end
 
-function get_C0(Lf)
+function get_C0(Lf, tau)
     charPolyF = characteristic_polynomial(Lf)
-
-    # how to divide charPolyF with (x-1)? 
+    while mod(charPolyF, (x-1)) == 0
+        div!(charPolyF, (x-1))
+    end
+    return div!(charPolyF, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
 end
 
 function get_Cfancy(Lf, C0)
