@@ -74,7 +74,7 @@ function get_C0(Lf::ZZLatWithIsom, tau::QQFieldElem)::PolyRingElem
     return div!(charPolyF, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
 end
 
-function get_Cfancy(Lf::ZZLatWithIsom, C0)
+function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
     # is it correct way to use short vectors?
     return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
         if dot(v,v) == -2.0 return v
