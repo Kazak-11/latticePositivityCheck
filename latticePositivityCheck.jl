@@ -13,7 +13,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
     if !isone(C0)
         Cfancy = get_Cfancy(Lf, C0)
         if !isempty(Cfancy)
-            return (false, QQ(Cfancy[0][0]))
+            return (false, QQ(Cfancy[1][1]))
         end
     end
 
@@ -34,7 +34,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
     # step 6 - Check all of the entries of R if there exists obstructing root => positive
     for r in Rh 
         result = check_R(r, v, w, bi_form) 
-        if !result[0] return result end
+        if !result[1] return result end
     end
     # step 7
     A = get_A(h, f, bi_form)
@@ -45,7 +45,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
         Rh = get_R(h, L, bi_form)
         for r in Rh
             result = check_R(r, v, w, bi_form)
-            if !result[0] return result end
+            if !result[1] return result end
         end
     end
     return (true, QQ(0))
@@ -76,8 +76,9 @@ end
 
 function get_C0(Lf::ZZLatWithIsom, tau::QQBarFieldElem)::PolyRingElem
     charPolyF = characteristic_polynomial(Lf)
-    (n, remainder) = remove(charPolyF, polynomial(QQ,[-1, 1]))
-    return div(remainder, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
+    x = gen(parent(charPolyF))
+    (n, remainder) = remove(charPolyF, x-1) # remove all x-1 factors
+    return div(remainder, minpoly(parent(charPolyF), tau)) #remove Salem polynomial of salem number tau
 end
 
 function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
@@ -85,7 +86,8 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
 end
 
 function get_h(L::ZZLat, v::Vector, w::Vector)::Vector
-    z = rand(short_vectors(L,0,2))
+    #z = rand(short_vectors(L,0,2))[1]
+    z = short_vectors(L,0,2)[1][1]
     return map(x->floor(x) , (z+n*(v+w)))
 end
 
