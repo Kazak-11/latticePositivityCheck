@@ -1,9 +1,10 @@
 const n = 1000000
 
-function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing)::(Bool, QQFieldElem)
+function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::(Bool, QQFieldElem)
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
+    bi_form = get_bilinealform(L)
 
     # step 1
     C0 = get_C0(Lf, tau)
@@ -12,7 +13,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     if !isone(C0)
         Cfancy = get_Cfancy(Lf, C0)
         if !isempty(Cfancy)
-            return (false, QQ(Cfancy[0]))
+            return (false, QQ(Cfancy[0][0]))
         end
     end
 
@@ -20,7 +21,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
     v = get_eigenvector(f, tau)
     w = get_eigenvector(f, tau^(-1))
 
-    if dot(v,w)<0
+    if bi_form(v,w)<0
         v = -v
     end
 
@@ -29,28 +30,28 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, nothing} = nothing
         h = get_h(L,v,w)
     end
     # step 5 - Get the R set based on current h value
-    Rh = get_R(L, h)
+    Rh = get_R(L, h, bi_form)
     # step 6 - Check all of the entries of R if there exists obstructing root => positive
     for r in Rh 
-        result = check_R(r, v, w) 
+        result = check_R(r, v, w, bi_form) 
         if !result[0] return result end
     end
     # step 7
-    A = get_A(h, f)
+    A = get_A(h, f, bi_form)
     # step 8 - Calculate new set of h values, that can show us obstructing roots
     H = map((a,b)-> -b*h + a*(f*h), A)
     # step 9 - Check all h from H to check if there exists any obstructing root => positive
     for h in H
-        Rh = get_R(h, L)
+        Rh = get_R(h, L, bi_form)
         for r in Rh
-            result = check_R(r, v, w)
+            result = check_R(r, v, w, bi_form)
             if !result[0] return result end
         end
     end
     return (true, QQ(0))
 end
 
-function get_tau(f::QQMatrix)::QQFieldElem
+function get_tau(f::QQMatrix) ::QQBarFieldElem
     Qb = algebraic_closure(QQ);
     tau = QQ(0)
     for lambda in eigenvalues(Qb, f)
@@ -61,26 +62,26 @@ function get_tau(f::QQMatrix)::QQFieldElem
     return tau
 end
 
-function get_eigenvector(f::QQMatrix, lambda::QQFieldElem)::Vector
-    # should I use OSCAR solve functionality or Julia function to get eigenvectors?
-    return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
+function get_bilinealform(L::ZZLat)
+    return (a,b)-> transpose(a)*gram_matrix(L)*b
 end
 
-function get_C0(Lf::ZZLatWithIsom, tau::QQFieldElem)::PolyRingElem
+function get_eigenvector(f::QQMatrix, lambda::QQBarFieldElem)::Vector
+    # should I use OSCAR solve functionality or Julia function to get eigenvectors?
+
+    # eigenspaces() is better
+    return eigenspace(f, QQRingElem(lambda); side =:right)
+    #return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
+end
+
+function get_C0(Lf::ZZLatWithIsom, tau::QQBarFieldElem)::PolyRingElem
     charPolyF = characteristic_polynomial(Lf)
-    while divides(charPolyF, (x-1))
-        div!(charPolyF, (x-1))
-    end
-    return div!(charPolyF, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
+    (n, remainder) = remove(charPolyF, polynomial(QQ,[-1, 1]))
+    return div(remainder, minpoly(QQ, tau)) #remove Salem polynomial of salem number tau
 end
 
 function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
-    # is it correct way to use short vectors?
-    return map(short_vectors(lattice(kernel_lattice(Lf, C0)), 1.4 , 1.5)) do (v,n)
-        if dot(v,v) == -2.0 return v
-        else return nothing
-        end
-    end
+    return short_vectors(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
 function get_h(L::ZZLat, v::Vector, w::Vector)::Vector
@@ -88,22 +89,22 @@ function get_h(L::ZZLat, v::Vector, w::Vector)::Vector
     return map(x->floor(x) , (z+n*(v+w)))
 end
 
-function get_R(L::ZZLat, h::Vector)::Array{Vector}
-    return map(short_vectors(L, 1.4 , 1.5)) do (v,n)
-        if dot(v,v) == -2.0 && dot(v,h) == 0.0 return v  # should I use ≈
+function get_R(L::ZZLat, h::Vector, bi_form)::Array{Vector}
+    return map(short_vectors(L, 2 , 2)) do (v,n)
+        if bi_form(v,h) == 0.0 return v
         else return nothing
         end
     end
 end
 
-function get_A(h::Vector, f::QQMatrix)::Array{(Int, Int)}
-    x = dot(h, h)
-    y = dot(h, f*h)
+function get_A(h::Vector, f::QQMatrix, bi_form)::Array{(Int, Int)}
+    x = bi_form(h, h)
+    y = bi_form(h, f*h)
     A = []
-
-    bmin = trunc(-√(2(y^2-x^2)/x))
+    # remove trunc, check isqrt()
+    bmin = trunc(-isqrt(2(y^2-x^2)/x))
     for b = bmin:-1
-        D = √((y^2-x^2)*(b^2+2x))
+        D = isqrt((y^2-x^2)*(b^2+2x))
         amin = trunc(Int, (b*y-D)/x)
         amax = trunc(Int, (b*y+D)/x)
         for a = amin:amax
@@ -113,7 +114,7 @@ function get_A(h::Vector, f::QQMatrix)::Array{(Int, Int)}
     return A
 end
 
-function check_R(r::Vector, v::Vector, w::Vector) :: (Bool, QQFieldElem)
-    if dot(r, v)*dot(r, w) < 0 return (false, QQ(r))
+function check_R(r::Vector, v::Vector, w::Vector, bi_form) :: (Bool, QQFieldElem)
+    if bi_form(r, v)*bi_form(r, w) < 0 return (false, QQ(r))
     else return (true, QQ(0)) end
 end
