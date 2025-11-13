@@ -1,4 +1,5 @@
 const n = 1000000
+const Qb = algebraic_closure(QQ);
 
 function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::(Bool, QQFieldElem)
     f = isometry(Lf)
@@ -52,7 +53,6 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
 end
 
 function get_tau(f::QQMatrix) ::QQBarFieldElem
-    Qb = algebraic_closure(QQ);
     tau = QQ(0)
     for lambda in eigenvalues(Qb, f)
         if abs(lambda)>tau
@@ -63,15 +63,11 @@ function get_tau(f::QQMatrix) ::QQBarFieldElem
 end
 
 function get_bilinealform(L::ZZLat)
-    return (a,b)-> transpose(a)*gram_matrix(L)*b
+    return (a,b)-> a*change_base_ring(Qb, gram_matrix(L))*transpose(b)
 end
 
-function get_eigenvector(f::QQMatrix, lambda::QQBarFieldElem)::Vector
-    # should I use OSCAR solve functionality or Julia function to get eigenvectors?
-
-    # eigenspaces() is better
-    return eigenspace(f, QQRingElem(lambda); side =:right)
-    #return solve(f-lambda*identity_matrix(f), zero(f),side == :right)
+function get_eigenvector(f::QQMatrix, lambda::QQBarFieldElem)
+    return eigenspace(change_base_ring(Qb, f), lambda; side=:left)
 end
 
 function get_C0(Lf::ZZLatWithIsom, tau::QQBarFieldElem)::PolyRingElem
@@ -85,8 +81,10 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
     return short_vectors(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
-function get_h(L::ZZLat, v::Vector, w::Vector)::Vector
+function get_h(L::ZZLat, v, w)
     #z = rand(short_vectors(L,0,2))[1]
+
+    #short_vectors_affine(L, )
     z = short_vectors(L,0,2)[1][1]
     return map(x->floor(x) , (z+n*(v+w)))
 end

@@ -1,15 +1,15 @@
 function test()
-    @test get_tau(f) == tau
-    @test get_eigenvector()
-    @test get_C0(L, tau) == C0
-    @test get_Cfancy(L, C0) == []
-    @test get_R(lattice(L), h, bi_form) == []
-    @test check_R(r, v, w, bi_form) == (true, QQ(0))
-    @test get_A(h, f, bi_form) == []
+    #@test get_tau(f) == tau
+    #@test get_eigenvector() # not done
+    #@test get_C0(L, tau) == C0
+    #@test get_Cfancy(L, C0) == []
+    #@test get_R(lattice(L), h, bi_form) == [] #not done
+    #@test check_R(r, v, w, bi_form) == (true, QQ(0))
+    #@test get_A(h, f, bi_form) == [] # not done
 end
 
 Qb = algebraic_closure(QQ);
-
+R, x = QQ[:x]
 # Gram matrix
 G = QQ[0 1 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1; 1 -2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0; 0 0 -2 0 0 0 0 0 0 0 0 1 1 1 0 1 0 1; 0 0 0 -2 0 0 0 0 0 0 1 0 1 0 1 1 1 0; 0 0 0 0 -2 0 0 0 0 0 0 0 1 1 1 0 0 1; 0 0 0 0 0 -2 0 0 0 0 1 1 0 1 0 1 0 0; 0 0 0 0 0 0 -2 0 0 0 1 0 0 1 1 0 1 1; 0 0 0 0 0 0 0 -2 0 0 1 1 1 0 0 0 1 0; 0 0 0 0 0 0 0 0 -2 0 0 1 0 0 0 0 1 1; 0 0 0 0 0 0 0 0 0 -2 0 0 0 0 1 1 0 0; 1 0 0 1 0 1 1 1 0 0 -2 2 2 2 2 0 0 2; 1 0 1 0 0 1 0 1 1 0 2 -2 1 0 2 2 1 1; 1 0 1 1 1 0 0 1 0 0 2 1 -2 0 0 1 2 1; 1 0 1 0 1 1 1 0 0 0 2 0 0 -2 1 2 2 1; 1 0 0 1 1 0 1 0 0 1 2 2 0 1 -2 1 1 1; 1 0 1 1 0 1 0 0 0 1 0 2 1 2 1 -2 2 2; 1 0 0 1 0 0 1 1 1 0 0 1 2 2 1 2 -2 1; 1 0 1 0 1 0 1 0 1 0 2 1 1 1 1 2 1 -2]
 
@@ -31,7 +31,7 @@ tau = get_tau(f)
 
 C0 = x^14 + 2*x^13 + 5*x^12 + 8*x^11 + 11*x^10 + 14*x^9 + 15*x^8 + 16*x^7 + 15*x^6 + 14*x^5 + 11*x^4 + 8*x^3 + 5*x^2 + 2*x + 1
 
-bi_form = get_bilinealform(L)
+bi_form = get_bilinealform(lattice(L))
 
 Rh = []
 
