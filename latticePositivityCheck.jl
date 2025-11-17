@@ -1,4 +1,3 @@
-const n = 1000000
 const Qb = algebraic_closure(QQ);
 
 function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::(Bool, QQFieldElem)
@@ -82,32 +81,26 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
 end
 
 function get_h(L::ZZLat, v, w)
-    #z = rand(short_vectors(L,0,2))[1]
-
-    #short_vectors_affine(L, )
-    z = short_vectors(L,0,2)[1][1]
+    n = 1000000
+    #z = rand(-10:10, number_of_rows(basis_matrix(L)))*basis_matrix(L)
+    z = ones(Int64,number_of_rows(basis_matrix(L)), 1) # for test purposes
+    z = matrix(Qb, transpose(z))
     return map(x->floor(x) , (z+n*(v+w)))
 end
 
-function get_R(L::ZZLat, h::Vector, bi_form)::Array{Vector}
-    return map(short_vectors(L, 2 , 2)) do (v,n)
-        if bi_form(v,h) == 0.0 return v
-        else return nothing
-        end
-    end
+function get_R(L::ZZLat, h)::Vector{QQMatrix}
+    return short_vectors_affine(L,h,0,-2)
 end
 
-function get_A(h::Vector, f::QQMatrix, bi_form)::Array{(Int, Int)}
+function get_A(h, f::QQMatrix, bi_form)::Array{(Int, Int)}
     x = bi_form(h, h)
     y = bi_form(h, f*h)
+    RR = ArbField(64)
     A = []
-    # remove trunc, check isqrt()
-    bmin = trunc(-isqrt(2(y^2-x^2)/x))
+    bmin = -isqrt(2(y^2-x^2)/x)
     for b = bmin:-1
-        D = isqrt((y^2-x^2)*(b^2+2x))
-        amin = trunc(Int, (b*y-D)/x)
-        amax = trunc(Int, (b*y+D)/x)
-        for a = amin:amax
+        a_roots = roots(polynomial(Qb, [-x,2*b*y,-x*b^2-2*x+2*y^2])) # calculate roots using symbolic tools and then use numerical approx
+        for a = trunc(RR(a_roots[1])):trunc(RR(a_roots[2]))
             push!(A,(a,b))
         end
     end
