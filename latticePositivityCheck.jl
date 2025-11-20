@@ -62,7 +62,7 @@ function get_tau(f::QQMatrix) ::QQBarFieldElem
 end
 
 function get_bilinealform(L::ZZLat)
-    return (a,b)-> a*change_base_ring(Qb, gram_matrix(L))*transpose(b)
+    return (a,b)-> (change_base_ring(Qb, a))*change_base_ring(Qb, gram_matrix(ambient_space(L)))*transpose(change_base_ring(Qb, b))
 end
 
 function get_eigenvector(f::QQMatrix, lambda::QQBarFieldElem)
@@ -80,15 +80,17 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
     return short_vectors(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
-function get_h(L::ZZLat, v, w)
-    n = 1000000
-    #z = rand(-10:10, number_of_rows(basis_matrix(L)))*basis_matrix(L)
-    z = ones(Int64,number_of_rows(basis_matrix(L)), 1) # for test purposes
-    z = matrix(Qb, transpose(z))
-    return map(x->floor(x) , (z+n*(v+w)))
+function get_h(L::ZZLat, v, w)::QQMatrix
+    n = 100000000
+    RR = ArbField(64)
+    l = number_of_rows(basis_matrix(L))
+    z = transpose(matrix(Qb,l,1,rand(-10:10, l)*basis_matrix(L)))
+    #z = ones(Int64,number_of_rows(basis_matrix(L)), 1) # for test purposes
+    #z = matrix(Qb, transpose(z))
+    return map(x->QQ(ZZ(floor(RR(x)))) , (z+n*(v+w)))
 end
 
-function get_R(L::ZZLat, h)::Vector{QQMatrix}
+function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
     return short_vectors_affine(L,h,0,-2)
 end
 
@@ -108,6 +110,6 @@ function get_A(h, f::QQMatrix, bi_form)::Array{(Int, Int)}
 end
 
 function check_R(r::Vector, v::Vector, w::Vector, bi_form) :: (Bool, QQFieldElem)
-    if bi_form(r, v)*bi_form(r, w) < 0 return (false, QQ(r))
+    if bi_form(r, v)*bi_form(r, w) < 0 return (false, QQ(r)) # need to remove QQ(r) into correct QQ vector type
     else return (true, QQ(0)) end
 end
