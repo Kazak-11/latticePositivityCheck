@@ -6,6 +6,8 @@ function test()
     #@test get_R(lattice(L), h, bi_form) == [] #not done
     #@test check_R(r, v, w, bi_form) == (true, QQ(0))
     #@test get_A(h, f, bi_form) == [] # not done
+    h = get_h(lattice(L), v, w)
+    #@test bi_form(h,h)>0
 end
 
 #Qb = algebraic_closure(QQ);

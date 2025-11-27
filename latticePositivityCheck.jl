@@ -1,6 +1,6 @@
 const Qb = algebraic_closure(QQ);
 
-function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::(Bool, QQFieldElem)
+function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::Tuple{Bool, Any}
     f = isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
@@ -81,35 +81,73 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
 end
 
 function get_h(L::ZZLat, v, w)::QQMatrix
-    n = 100000000
     RR = ArbField(64)
     l = number_of_rows(basis_matrix(L))
-    z = transpose(matrix(Qb,l,1,rand(-100:100, l))) #vector rand(-10:10, l) is in lattice basis => z vector is in ambient space basis
+    h0 = (v+w)*change_base_ring(Qb, inv(basis_matrix(L)))
+    n = 10
+    z = matrix(Qb,1,l,rand(-20:20, l)) #vector rand(-10:10, l) is in lattice basis => z vector is in ambient space basis
+    h = (z+h0*n) #in lattice basis
+    h = map(x->QQ(ZZ(floor(RR(x)))) , h)*basis_matrix(L) # in ambient space basis and rounded
+    while bi_form(h,h) <= 0 || n == 10000
+        n+=1
+        h = (z+h0*n) #in lattice basis
+        h = map(x->QQ(ZZ(floor(RR(x)))) , h)*basis_matrix(L) # in ambient space basis and rounded
+    end
     #z = ones(Int64,number_of_rows(basis_matrix(L)), 1) # for test purposes
     #z = matrix(Qb, transpose(z))
-    return map(x->QQ(ZZ(floor(RR(x)))) , (z+n*(v+w)))*basis_matrix(L)
+    print(n)
+    return h
 end
 
 function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
     return short_vectors_affine(L,h,0,-2)
 end
 
-function get_A(h, f::QQMatrix, bi_form)::Array{(Int, Int)}
+function process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
     x = bi_form(h, h)
-    y = bi_form(h, f*h)
+    y = bi_form(h, h*f)
+    z = y^2-x^2
+    if (z<0) return [] end #then discrininant for a will be <0 
     RR = ArbField(64)
-    A = []
-    bmin = -isqrt(2(y^2-x^2)/x)
-    for b = bmin:-1
-        a_roots = roots(polynomial(Qb, [-x,2*b*y,-x*b^2-2*x+2*y^2])) # calculate roots using symbolic tools and then use numerical approx
-        for a = trunc(RR(a_roots[1])):trunc(RR(a_roots[2]))
-            push!(A,(a,b))
+    b_min = trunc(convert(Float64,RR(-sqrt(2*z/x))))
+    for b = b_min:-1
+        a_max = trunc(convert(Float64,RR((ZZ(b)*y+sqrt(z*(ZZ(b)^2+2*x)))/x)))
+        #print(a_max)
+        for a = 1:a_max
+            h_new = -ZZ(b)*h + ZZ(a)*(h*f)
+            Rh = get_R(L, h_new)
+            for r in Rh
+                result = check_R(r, v, w, bi_form)
+                if !result[1] 
+                    return result
+                end
+            end
         end
     end
-    return A
+    return (true, zero(h))
 end
 
-function check_R(r, v, w, bi_form) :: (Bool, QQFieldElem)
-    if bi_form(r, v)*bi_form(r, w) < 0 return (false, QQ(r)) # need to remove QQ(r) into correct QQ vector type
-    else return (true, QQ(0)) end
+function get_A(h, f::QQMatrix, bi_form) # need to combine it with new h calculations, so no set A or H should be created(memory optimization)
+    #::Array{Tuple{Int, Int}}
+    x = bi_form(h, h)
+    y = bi_form(h, h*f)
+    z = y^2-x^2
+    if (z<0) return [] end #then discrininant for a will be <0 
+    RR = ArbField(64)
+    A = []
+    b_min = trunc(convert(Float64,RR(-sqrt(2*z/x))))
+    #print(bmin)
+    for b = b_min:-1
+        a_max = (ZZ(b)*y+sqrt(z*(ZZ(b)^2+2*x)))/x
+        print(a_max)
+        #for a = 1:a_max
+        #    push!(A,(ZZ(a),ZZ(b)))
+        #end
+    end
+    return bmin
+end
+
+function check_R(r, v, w, bi_form) :: Tuple{Bool, Any}
+    if bi_form(r, v)*bi_form(r, w) < 0 return (false, r)
+    else return (true, zero(r)) end
 end
