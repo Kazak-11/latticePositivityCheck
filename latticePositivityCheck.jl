@@ -81,13 +81,13 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
 end
 
 function get_h(L::ZZLat, v, w)::QQMatrix
-    n = 10
+    n = 100000000
     RR = ArbField(64)
     l = number_of_rows(basis_matrix(L))
-    z = transpose(matrix(Qb,l,1,rand(-10:10, l)*basis_matrix(L))) #vector rand(-10:10, l) is in lattice basis => z vector is in ambient space basis
+    z = transpose(matrix(Qb,l,1,rand(-100:100, l))) #vector rand(-10:10, l) is in lattice basis => z vector is in ambient space basis
     #z = ones(Int64,number_of_rows(basis_matrix(L)), 1) # for test purposes
     #z = matrix(Qb, transpose(z))
-    return map(x->QQ(ZZ(floor(RR(x)))) , (z+n*(v+w)))
+    return map(x->QQ(ZZ(floor(RR(x)))) , (z+n*(v+w)))*basis_matrix(L)
 end
 
 function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
