@@ -86,6 +86,11 @@ function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
     return short_vectors_affine(L,h,0,-2)
 end
 
+
+# The function calculates all r, that can be obstructing roots of L.
+# Calculation is made one by one and then the r is checked
+# r is based on pairs of integer (a,b) of -2x^2+2y^2+2aby>=x(a^2+b^2) with a>0, b<0, x>0,y>0
+# See Steps 7,8,9 of Algorithm 5.8 of "MINIMUM POSITIVE ENTROPY OF COMPLEX ENRIQUES SURFACE AUTOMORPHISMS" paper
 function process_finite_sets_of_h(h, f::QQMatrix, v, w, bi_form, L::ZZLat):: Tuple{Bool, QQMatrix}
     x = bi_form(h, h)
     y = bi_form(h, h*f)
