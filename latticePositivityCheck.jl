@@ -48,11 +48,12 @@ function get_tau(f::QQMatrix) ::QQBarFieldElem
 end
 
 function get_bilinealform(L::ZZLat)
+  #return (a, b)->inner_product(ambient_space(L), a,b)[1,1]
   return (a,b)-> ((change_base_ring(Qb, a))*change_base_ring(Qb, gram_matrix(ambient_space(L)))*transpose(change_base_ring(Qb, b)))[1]
 end
 
 function get_eigenvector(f::QQMatrix, lambda::QQBarFieldElem)
-  return eigenspace(change_base_ring(Qb, f), lambda; side=:left)
+  return eigenspace(f, lambda; side=:left)
 end
 
 function get_C0(Lf::ZZLatWithIsom, tau::QQBarFieldElem)::PolyRingElem
