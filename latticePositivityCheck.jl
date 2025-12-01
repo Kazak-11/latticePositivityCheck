@@ -11,8 +11,9 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
   # step 2 - Check if C0 has obstructing roots => positive
   if !isone(C0)
     Cfancy = get_Cfancy(Lf, C0)
-    if !isempty(Cfancy)
-      return (false, Cfancy[1][1])
+    first_element = iterate(Cfancy)
+    if first_element != nothing
+      return (false, first_element[1][1])
     end
   end
   # step 3 - Prepare eigenvectors from tau and tau inverse 
@@ -63,8 +64,8 @@ function get_C0(Lf::ZZLatWithIsom, tau::QQBarFieldElem)::PolyRingElem
   return div(remainder, minpoly(parent(charPolyF), tau)) #remove Salem polynomial of salem number tau
 end
 
-function get_Cfancy(Lf::ZZLatWithIsom, C0)::Array{Vector}
-  return short_vectors(lattice(kernel_lattice(Lf, C0)), 2 , 2)
+function get_Cfancy(Lf::ZZLatWithIsom, C0)
+  return short_vectors_iterator(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
 function get_h(L::ZZLat, v, w)::QQMatrix

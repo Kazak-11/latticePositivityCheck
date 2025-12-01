@@ -34,7 +34,7 @@ function test()
     end
     @testset "C Sets Check" begin
       #@test get_C0(L, tau) == C0
-      @test get_Cfancy(L, C0) == []
+      @test iterate(get_Cfancy(L, C0)) == nothing
     end
     @testset "h Check" begin
       @test bi_form(h,h)>0
