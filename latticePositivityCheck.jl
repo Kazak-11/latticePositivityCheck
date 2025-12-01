@@ -8,8 +8,6 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
 
     # step 1
     C0 = get_C0(Lf, tau)
-    print(C0)
-    print("\n Step 1 complete \n")
     # step 2 - Check if C0 has obstructing roots => positive
     if !isone(C0)
         Cfancy = get_Cfancy(Lf, C0)
@@ -17,7 +15,6 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
             return (false, QQ(Cfancy[1][1]))
         end
     end
-    print("\n Step 2 complete \n")
     # step 3 - Prepare eigenvectors from tau and tau inverse 
     v = get_eigenvector(f, tau)
     w = get_eigenvector(f, tau^(-1))
@@ -25,28 +22,17 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
     if bi_form(v,w)<0
         v = -v
     end
-    print(v)
-    print("\n")
-    print(w)
-    print("\n Step 3 complete \n")
     # step 4 - Get the first h value if there is no in arguments
-    if (h==nothing) 
+    if (h==nothing)
         h = get_h(L,v,w)
     end
-    print(h)
-    print("\n")
-    print(bi_form(h,h))
-    print("\n Step 4 complete \n")
     # step 5 - Get the R set based on current h value
     Rh = get_R(L, h)
-    print(Rh)
-    print("\n Step 5 complete \n")
     # step 6 - Check all of the entries of R if there exists obstructing root => positive
-    for r in Rh 
+    for r in Rh
         result = check_R(r, v, w, bi_form) 
         if !result[1] return result end
     end
-    print("\n Step 6 complete \n")
     # step 6,7,8 are combined to process them iteratively
     return process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
 end
@@ -105,7 +91,7 @@ function process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
     x = bi_form(h, h)
     y = bi_form(h, h*f)
     z = y^2-x^2
-    if (z<0) return (true, zero(h)) end #then discrininant for a will be <0 
+    if (z<0) return (true, zero(h)) end #then discrininant for a will be <0 and there is no roots (a,b)=> no obstructing roots => positive
     RR = ArbField(64)
     b_min = trunc(convert(Float64,RR(-sqrt(2*z/x))))
     for b = b_min:-1
