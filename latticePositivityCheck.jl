@@ -1,6 +1,6 @@
 const Qb = algebraic_closure(QQ);
 
-function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing)::Tuple{Bool, Any}
+function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothing):: Tuple{Bool, QQMatrix}
     f = ambient_isometry(Lf)
     L = lattice(Lf)
     tau = get_tau(f)
@@ -12,7 +12,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
     if !isone(C0)
         Cfancy = get_Cfancy(Lf, C0)
         if !isempty(Cfancy)
-            return (false, QQ(Cfancy[1][1]))
+            return (false, Cfancy[1][1])
         end
     end
     # step 3 - Prepare eigenvectors from tau and tau inverse 
@@ -34,7 +34,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{Vector, Nothing} = nothing
         if !result[1] return result end
     end
     # step 6,7,8 are combined to process them iteratively
-    return process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
+    return process_finite_sets_of_h(h, f, v, w, bi_form, L)
 end
 
 function get_tau(f::QQMatrix) ::QQBarFieldElem
@@ -79,7 +79,6 @@ function get_h(L::ZZLat, v, w)::QQMatrix
         h = (z+h0*n) #in lattice basis
         h = map(x->QQ(ZZ(floor(RR(x)))) , h)*basis_matrix(L) # in ambient space basis and rounded
     end
-    print(n)
     return h
 end
 
@@ -87,7 +86,7 @@ function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
     return short_vectors_affine(L,h,0,-2)
 end
 
-function process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
+function process_finite_sets_of_h(h, f::QQMatrix, v, w, bi_form, L::ZZLat):: Tuple{Bool, QQMatrix}
     x = bi_form(h, h)
     y = bi_form(h, h*f)
     z = y^2-x^2
@@ -110,7 +109,7 @@ function process_finite_sets_of_h(h, f::QQMatrix, bi_form, L::ZZLat)
     return (true, zero(h))
 end
 
-function check_R(r, v, w, bi_form) :: Tuple{Bool, Any}
+function check_R(r, v, w, bi_form) :: Tuple{Bool, QQMatrix}
     if bi_form(r, v)*bi_form(r, w) < 0 return (false, r)
     else return (true, zero(r)) end
 end
