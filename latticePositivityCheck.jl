@@ -70,12 +70,17 @@ function get_h(L::ZZLat, v, w)::QQMatrix
     RR = ArbField(64)
     l = number_of_rows(basis_matrix(L))
     h0 = (v+w)*change_base_ring(Qb, inv(basis_matrix(L)))
-    n = 10
+    n = 1
+    i = 1
     z = matrix(Qb,1,l,rand(-10:10, l)) # random small vector in lattice basis
     h = (z+h0*n) # in lattice basis
     h = map(x->QQ(ZZ(floor(RR(x)))) , h)*basis_matrix(L) # in ambient space basis and rounded
     while bi_form(h,h) <= 0 || n == 10000  # block on 10000, because for a bigger n time consumption is way too big
-        n+=1
+        i+=1
+        if i == 100
+            n+=1
+            i = 1
+        end
         h = (z+h0*n) #in lattice basis
         h = map(x->QQ(ZZ(floor(RR(x)))) , h)*basis_matrix(L) # in ambient space basis and rounded
     end
