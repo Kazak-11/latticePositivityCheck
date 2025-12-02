@@ -1,10 +1,9 @@
-const Qb = algebraic_closure(QQ);
-
 function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothing):: Tuple{Bool, QQMatrix}
+  Qb = algebraic_closure(QQ);
   f = ambient_isometry(Lf)
   L = lattice(Lf)
-  tau = get_tau(f)
-  bi_form = get_bilinealform(L)
+  tau = get_tau(f, Qb)
+  bi_form = get_bilinealform(L, Qb)
 
     # step 1
   C0 = get_C0(Lf, tau)
@@ -12,7 +11,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
   if !isone(C0)
     Cfancy = get_Cfancy(Lf, C0)
     first_element = iterate(Cfancy)
-    if first_element != nothing
+    if first_element !== nothing
       return (false, first_element[1][1])
     end
   end
@@ -24,8 +23,8 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
     v = -v
   end
   # step 4 - Get the first h value if there is no in arguments
-  if (h==nothing)
-    h = get_h(L,v,w)
+  if (h===nothing)
+    h = get_h(L,v,w, Qb)
   end
   # step 5 - Get the R set based on current h value
   Rh = get_R(L, h)
@@ -38,7 +37,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
   return process_finite_sets_of_h(h, f, v, w, bi_form, L)
 end
 
-function get_tau(f::QQMatrix) ::QQBarFieldElem
+function get_tau(f::QQMatrix, Qb) ::QQBarFieldElem
   tau = QQ(0)
   for lambda in eigenvalues(Qb, f)
     if abs(lambda)>tau
@@ -48,7 +47,7 @@ function get_tau(f::QQMatrix) ::QQBarFieldElem
   return tau
 end
 
-function get_bilinealform(L::ZZLat)
+function get_bilinealform(L::ZZLat, Qb)
   #return (a, b)->inner_product(ambient_space(L), a,b)[1,1]
   return (a,b)-> ((change_base_ring(Qb, a))*change_base_ring(Qb, gram_matrix(ambient_space(L)))*transpose(change_base_ring(Qb, b)))[1]
 end
@@ -68,7 +67,7 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)
   return short_vectors_iterator(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
-function get_h(L::ZZLat, v, w)::QQMatrix
+function get_h(L::ZZLat, v, w, Qb)::QQMatrix
   RR = ArbField(64)
   l = number_of_rows(basis_matrix(L))
   h0 = (v+w)*change_base_ring(Qb, inv(basis_matrix(L)))

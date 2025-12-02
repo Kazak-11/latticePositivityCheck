@@ -1,4 +1,5 @@
 function test()
+  Qb = algebraic_closure(QQ);
   #Qb = algebraic_closure(QQ);
   R, x = QQ[:x]
   # Gram matrix
@@ -18,15 +19,15 @@ function test()
   L = lattice(Vf, B)
   @assert lattice(Vf,basis_matrix(L)*f) == L
 
-  tau = get_tau(f)
+  tau = get_tau(f, Qb)
 
   C0 = x^14 + 2*x^13 + 5*x^12 + 8*x^11 + 11*x^10 + 14*x^9 + 15*x^8 + 16*x^7 + 15*x^6 + 14*x^5 + 11*x^4 + 8*x^3 + 5*x^2 + 2*x + 1
 
-  bi_form = get_bilinealform(lattice(L))
+  bi_form = get_bilinealform(lattice(L), Qb)
 
   v = get_eigenvector(f, tau)
   w = get_eigenvector(f, tau^(-1))
-  h = get_h(lattice(L), v, w)
+  h = get_h(lattice(L), v, w, Qb)
   @testset verbose = true "Lattice Positivity Checker" begin
     @testset "Vector Sanity Check" begin
       @test bi_form(v,v) == 0
@@ -34,7 +35,7 @@ function test()
     end
     @testset "C Sets Check" begin
       #@test get_C0(L, tau) == C0
-      @test iterate(get_Cfancy(L, C0)) == nothing
+      @test iterate(get_Cfancy(L, C0)) === nothing
     end
     @testset "h Check" begin
       @test bi_form(h,h)>0
