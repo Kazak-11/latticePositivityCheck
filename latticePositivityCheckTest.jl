@@ -27,7 +27,7 @@ function test()
 
   v = get_eigenvector(f, tau)
   w = get_eigenvector(f, tau^(-1))
-  h = get_h(lattice(L), v, w, Qb)
+  h = get_h(lattice(L), v, w, Qb, bi_form)
   @testset verbose = true "Lattice Positivity Checker" begin
     @testset "Vector Sanity Check" begin
       @test bi_form(v,v) == 0

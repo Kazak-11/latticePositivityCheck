@@ -5,7 +5,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
   tau = get_tau(f, Qb)
   bi_form = get_bilinealform(L, Qb)
 
-    # step 1
+  # step 1
   C0 = get_C0(Lf, tau)
   # step 2 - Check if C0 has obstructing roots => positive
   if !isone(C0)
@@ -24,7 +24,7 @@ function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothi
   end
   # step 4 - Get the first h value if there is no in arguments
   if (h===nothing)
-    h = get_h(L,v,w, Qb)
+    h = get_h(L,v,w, Qb, bi_form)
   end
   # step 5 - Get the R set based on current h value
   Rh = get_R(L, h)
@@ -67,7 +67,7 @@ function get_Cfancy(Lf::ZZLatWithIsom, C0)
   return short_vectors_iterator(lattice(kernel_lattice(Lf, C0)), 2 , 2)
 end
 
-function get_h(L::ZZLat, v, w, Qb)::QQMatrix
+function get_h(L::ZZLat, v, w, Qb, bi_form)::QQMatrix
   RR = ArbField(64)
   l = number_of_rows(basis_matrix(L))
   h0 = (v+w)*change_base_ring(Qb, inv(basis_matrix(L)))
