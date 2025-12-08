@@ -1,32 +1,5 @@
 function test()
-  
-  @testset verbose = true "Lattice Positivity Checker" begin
-    @testset "Vector Sanity Check" begin
-      @test bi_form(v,v) == 0
-      @test bi_form(w,w) == 0
-    end
-    @testset "C Sets Check" begin
-      #@test get_C0(L, tau) == C0
-      @test iterate(_get_Cfancy(L, C0)) === nothing
-    end
-    @testset "h Check" begin
-      @test bi_form(h,h)>0
-    end
-    @testset "r from h Check" begin
-      Rh = _get_R(lattice(L), h)
-      if Rh != []
-        @test _check_R(Rh[1], v, w, bi_form)[1] == true
-      end
-    end
-    @testset "Whole Algorithm Check" begin
-      @test isometry_is_positive(L, h)[1] == true # this test takes usually 3-5 minutes and it is the main test for isometry_positive function
-    end
-  end
-    nothing
-end
-
-
-Qb = algebraic_closure(QQ);
+  Qb = algebraic_closure(QQ);
   #Qb = algebraic_closure(QQ);
   R, x = QQ[:x]
   # Gram matrix
@@ -55,3 +28,28 @@ Qb = algebraic_closure(QQ);
   v = _get_eigenvector(f, tau)
   w = _get_eigenvector(f, tau^(-1))
   h = _get_h(lattice(L), v, w, Qb, bi_form)
+  
+  @testset verbose = true "Lattice Positivity Checker" begin
+    @testset "Vector Sanity Check" begin
+      @test bi_form(v,v) == 0
+      @test bi_form(w,w) == 0
+    end
+    @testset "C Sets Check" begin
+      #@test get_C0(L, tau) == C0
+      @test iterate(_get_Cfancy(L, C0)) === nothing
+    end
+    @testset "h Check" begin
+      @test bi_form(h,h)>0
+    end
+    @testset "r from h Check" begin
+      Rh = _get_R(lattice(L), h)
+      if Rh != []
+        @test _check_R(Rh[1], v, w, bi_form)[1] == true
+      end
+    end
+    @testset "Whole Algorithm Check" begin
+      @test isometry_is_positive(L, h)[1] == true # this test takes usually 3-5 minutes and it is the main test for isometry_positive function
+    end
+  end
+    nothing
+end

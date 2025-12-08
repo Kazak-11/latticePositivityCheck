@@ -50,7 +50,7 @@ function _get_h(L::ZZLat, v, w, Qb, bi_form)::QQMatrix
 end
 
 function _get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
-  return short_vectors_affine(L,h,0,-2)
+  return short_vectors_affine(L,h,0,-2) #better to use iterator, but there is no equivalent function that returns iterator
 end
 
 @doc raw"""
