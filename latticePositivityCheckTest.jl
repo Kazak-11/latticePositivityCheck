@@ -1,5 +1,32 @@
 function test()
-  Qb = algebraic_closure(QQ);
+  
+  @testset verbose = true "Lattice Positivity Checker" begin
+    @testset "Vector Sanity Check" begin
+      @test bi_form(v,v) == 0
+      @test bi_form(w,w) == 0
+    end
+    @testset "C Sets Check" begin
+      #@test get_C0(L, tau) == C0
+      @test iterate(get_Cfancy(L, C0)) === nothing
+    end
+    @testset "h Check" begin
+      @test bi_form(h,h)>0
+    end
+    @testset "r from h Check" begin
+      Rh = get_R(lattice(L), h)
+      if Rh != []
+        @test check_R(Rh[1], v, w, bi_form)[1] == true
+      end
+    end
+    @testset "Whole Algorithm Check" begin
+      #@test lattice_positive(L, h)[1] == true
+    end
+  end
+    nothing
+end
+
+
+Qb = algebraic_closure(QQ);
   #Qb = algebraic_closure(QQ);
   R, x = QQ[:x]
   # Gram matrix
@@ -28,27 +55,3 @@ function test()
   v = get_eigenvector(f, tau)
   w = get_eigenvector(f, tau^(-1))
   h = get_h(lattice(L), v, w, Qb, bi_form)
-  @testset verbose = true "Lattice Positivity Checker" begin
-    @testset "Vector Sanity Check" begin
-      @test bi_form(v,v) == 0
-      @test bi_form(w,w) == 0
-    end
-    @testset "C Sets Check" begin
-      #@test get_C0(L, tau) == C0
-      @test iterate(get_Cfancy(L, C0)) === nothing
-    end
-    @testset "h Check" begin
-      @test bi_form(h,h)>0
-    end
-    @testset "r from h Check" begin
-      Rh = get_R(lattice(L), h)
-      if Rh != []
-        @test check_R(Rh[1], v, w, bi_form)[1] == true
-      end
-    end
-    @testset "Whole Algorithm Check" begin
-      #@test lattice_positive(L, h)[1] == true
-    end
-  end
-    nothing
-end

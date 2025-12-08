@@ -1,3 +1,17 @@
+@doc raw"""
+  lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothing) -> Tuple{Bool, QQMatrix}
+
+Given lattice with isometry 'Lf' and given 'h' vector in this lattice
+according to the ambient space basis, such that $h^2>0$. 
+If no such vector is given, 'h' will be calculated by function inside based on a random vector in 'Lf'.
+
+Return a tuple of a boolean that represents if isometry f of the lattice is positive and QQMatrix,
+that represents an obstructing root(see Algorithm 5.8 of "MINIMUM POSITIVE ENTROPY OF COMPLEX
+ENRIQUES SURFACE AUTOMORPHISMS" by KEIJI OGUISO and XUN YU)
+
+For positive isometries it returns a vector of zeros with the same dimension as 'h'.
+"""
+
 function lattice_positive(Lf::ZZLatWithIsom, h::Union{QQMatrix, Nothing} = nothing):: Tuple{Bool, QQMatrix}
   Qb = algebraic_closure(QQ);
   f = ambient_isometry(Lf)
@@ -92,7 +106,6 @@ function get_R(L::ZZLat, h::QQMatrix)::Vector{QQMatrix}
   return short_vectors_affine(L,h,0,-2)
 end
 
-
 # The function calculates all r, that can be obstructing roots of L.
 # Calculation is made one by one and then the r is checked
 # r is based on pairs of integer (a,b) of -2x^2+2y^2+2aby>=x(a^2+b^2) with a>0, b<0, x>0,y>0
@@ -103,6 +116,7 @@ function process_finite_sets_of_h(h, f::QQMatrix, v, w, bi_form, L::ZZLat):: Tup
   z = y^2-x^2
   if (z<0) return (true, zero(h)) end #then discrininant for a will be <0 and there is no roots (a,b)=> no obstructing roots => positive
   RR = ArbField(64)
+  trunc(ZZRingElem,-sqrt(2*z/x))
   b_min = trunc(convert(Float64,RR(-sqrt(2*z/x))))
   for b = b_min:-1
     a_max = trunc(convert(Float64,RR((ZZ(b)*y+sqrt(z*(ZZ(b)^2+2*x)))/x)))
